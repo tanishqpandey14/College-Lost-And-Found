@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-warm: #FDFBF7;
+    --card-cream: #F4EFE6;
+    --input-bg: #EFE9DD;
+    --navy-primary: #000B76;
+    --crimson-accent: #C90035;
+    --emerald-accent: #007A55;
+    --text-primary: #1A1A1A;
+    --text-muted: #666666;
+  }
+
+  body {
+    background-color: var(--bg-warm);
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+}

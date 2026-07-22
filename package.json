@@ -1,0 +1,24 @@
+{
+  "name": "college-lost-found",
+  "version": "1.0.0",
+  "description": "College Lost & Found System with AI Matching",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "keywords": [
+    "mern",
+    "lost-and-found",
+    "jina-ai",
+    "tailwindcss",
+    "react"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
