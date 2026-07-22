@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import API from '../../services/api';
-import { ArrowLeft, Lock, ArrowRight, Upload } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Upload } from 'lucide-react';
 
 export default function ReportLost() {
   const navigate = useNavigate();
@@ -13,8 +13,7 @@ export default function ReportLost() {
     lostDate: '',
     lostTime: '',
     lostLocation: '',
-    description: '',
-    hiddenDetails: ''
+    description: ''
   });
   const [files, setFiles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,7 +74,7 @@ export default function ReportLost() {
             Report a Lost Item
           </h1>
           <p className="text-sm text-[#666666] mt-2">
-            Provide descriptive characteristics. Jina AI will compute similarity against found reports.
+            Provide descriptive characteristics. AI will compute similarity against found reports.
           </p>
         </div>
 
@@ -197,39 +196,20 @@ export default function ReportLost() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold tracking-wider text-[#1A1A1A] uppercase mb-1.5">
-                PUBLIC DESCRIPTION<span className="text-[#C90035]"> *</span>
-              </label>
-              <textarea
-                name="description"
-                rows="4"
-                required
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="Visible characteristics anyone could describe."
-                className="w-full px-4 py-3 rounded-xl bg-[#EFE9DD] border border-[#E2D9C8] text-[#1A1A1A] placeholder-[#888888] focus:outline-none focus:ring-2 focus:ring-[#000B76] text-sm resize-none"
-              ></textarea>
-            </div>
-
-            <div className="bg-[#EAE3D5] p-4 rounded-2xl border border-[#DCD3C3]">
-              <div className="flex items-center gap-2 mb-2 text-[#000B76]">
-                <Lock className="w-4 h-4" />
-                <label className="block text-xs font-bold tracking-wider uppercase">
-                  HIDDEN DETAILS<span className="text-[#C90035]"> *</span>
-                </label>
-              </div>
-              <textarea
-                name="hiddenDetails"
-                rows="3"
-                required
-                value={formData.hiddenDetails}
-                onChange={handleChange}
-                placeholder="Private details: serial numbers, wallpaper, contents."
-                className="w-full px-4 py-2.5 rounded-xl bg-[#FDFBF7] border border-[#E2D9C8] text-[#1A1A1A] placeholder-[#888888] focus:outline-none focus:ring-2 focus:ring-[#000B76] text-sm resize-none"
-              ></textarea>
-            </div>
+          {/* Full-width Public Description Field */}
+          <div>
+            <label className="block text-xs font-bold tracking-wider text-[#1A1A1A] uppercase mb-1.5">
+              PUBLIC DESCRIPTION<span className="text-[#C90035]"> *</span>
+            </label>
+            <textarea
+              name="description"
+              rows="4"
+              required
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Visible characteristics anyone could describe."
+              className="w-full px-4 py-3 rounded-xl bg-[#EFE9DD] border border-[#E2D9C8] text-[#1A1A1A] placeholder-[#888888] focus:outline-none focus:ring-2 focus:ring-[#000B76] text-sm resize-none"
+            ></textarea>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-[#E2D9C8]">
@@ -253,7 +233,7 @@ export default function ReportLost() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-8 py-3.5 rounded-full bg-[#000B76] hover:bg-[#000B76]/90 text-white font-semibold text-sm shadow-md flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              className="px-8 py-3.5 rounded-full bg-[#000B76] hover:bg-[#000B76]/90 text-white font-semibold text-sm shadow-md flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? 'Submitting Report...' : 'Submit Lost Report'}
               <ArrowRight className="w-4 h-4" />
