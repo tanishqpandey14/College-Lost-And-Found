@@ -68,7 +68,7 @@ export default function Dashboard() {
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <Link
-            to="/report-lost"
+            to="/lost-item/new"
             className="flex-1 md:flex-none px-6 py-3.5 rounded-full bg-[#C90035] hover:bg-[#C90035]/90 text-white font-semibold text-sm shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
