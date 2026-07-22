@@ -8,7 +8,7 @@ import {
   MapPin, 
   User, 
   Calendar, 
-  UserCheck
+  Trash2
 } from 'lucide-react';
 
 export default function LostDetails() {
@@ -18,6 +18,7 @@ export default function LostDetails() {
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchItemDetails();
@@ -47,6 +48,19 @@ export default function LostDetails() {
     });
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this lost report?')) return;
+    try {
+      setDeleting(true);
+      await API.delete(`/lost-items/${id}`);
+      navigate('/');
+    } catch (err) {
+      console.error('Error deleting lost item:', err);
+      alert('Failed to delete report.');
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="py-20 text-center">
@@ -60,10 +74,10 @@ export default function LostDetails() {
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
         <p className="text-[#666666] font-medium text-sm">Lost item report not found.</p>
         <Link
-          to="/lost-items"
+          to="/"
           className="inline-flex items-center gap-2 mt-4 text-xs font-bold text-[#000B76]"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to lost items
+          <ArrowLeft className="w-4 h-4" /> Back to dashboard
         </Link>
       </div>
     );
@@ -78,10 +92,10 @@ export default function LostDetails() {
       
       {/* Back Button */}
       <Link
-        to="/lost-items"
+        to="/"
         className="inline-flex items-center gap-2 text-xs font-bold text-[#1A1A1A] hover:text-[#000B76] transition-colors"
       >
-        <ArrowLeft className="w-4 h-4" /> Back to all items
+        <ArrowLeft className="w-4 h-4" /> Back to dashboard
       </Link>
 
       {/* Main Card */}
@@ -152,13 +166,17 @@ export default function LostDetails() {
 
           </div>
 
-          {/* Action Footer: Clean button without icons */}
+          {/* Action Footer: Delete button for owner, or Found Report button for others */}
           <div className="border-t border-[#E2D9C8] pt-6">
             {isOwner ? (
-              <div className="py-3 px-4 rounded-2xl bg-[#EFE9DD] border border-[#E2D9C8] flex items-center justify-center gap-2 text-xs text-[#666666] font-semibold italic text-center">
-                <UserCheck className="w-4 h-4 text-[#000B76]" />
-                This lost report was created by you.
-              </div>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="w-full py-3.5 px-6 rounded-2xl bg-[#C90035] hover:bg-[#C90035]/90 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                {deleting ? 'Deleting Report...' : 'Delete Report'}
+              </button>
             ) : (
               <button
                 onClick={handleFoundRedirect}
