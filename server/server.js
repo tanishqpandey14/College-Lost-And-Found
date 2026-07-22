@@ -10,10 +10,28 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Enable CORS
+// Allowed Origins for CORS (Supports Vercel production, custom domains, and local dev)
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:3000'
+].filter(Boolean); // Removes undefined values if CLIENT_URL is not set
+
+// Enable CORS for Express
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl, Postman)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin matches or if it's any Vercel deployment preview (*.vercel.app)
+      const isVercel = origin.endsWith('.vercel.app');
+      if (allowedOrigins.includes(origin) || isVercel) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true
   })
 );
@@ -24,10 +42,26 @@ app.use(express.urlencoded({ extended: true }));
 // Connect Database
 connectDB();
 
+// Root Welcome Route (Fixes "Cannot GET /" on Render)
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'College Lost & Found API is up and running!'
+  });
+});
+
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      const isVercel = origin.endsWith('.vercel.app');
+      if (allowedOrigins.includes(origin) || isVercel) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST'],
     credentials: true
   }
