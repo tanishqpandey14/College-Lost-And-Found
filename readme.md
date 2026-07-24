@@ -1,27 +1,102 @@
-🎒 Campus Lost & Found Platform
-A full-stack web application built for college campuses to streamline reporting, tracking, and recovery of lost and found items. Powered by Jina AI semantic matching embeddings and real-time communication tools.
+# 🎒 Campus Lost & Found Platform
 
-✨ Project Overview
-The Campus Lost & Found Platform solves campus asset management and item recovery challenges by providing a centralized digital space for students and faculty. Instead of relying on passive notice boards, this platform leverages AI vector embeddings to actively match lost item reports against found items in real time.
+An AI-powered full-stack web application designed for college campuses to simplify reporting, tracking, and recovering lost and found items. The platform uses **Jina AI semantic embeddings** to intelligently match lost and found reports based on their descriptions, helping users recover belongings more efficiently.
 
-🔑 Core Features
-AI Semantic Matching Engine: Integrated Jina AI vector embeddings to analyze item descriptions and automatically compute high-confidence similarity scores between lost reports and found assets.
+## ✨ Features
 
-Real-Time Communication: Built-in live chat and negotiation channels powered by Socket.IO, enabling reporters and finders to communicate instantly.
+- 🤖 AI-powered semantic matching using Jina AI Embeddings
+- 🔐 JWT-based user authentication and authorization
+- 📦 Report lost and found items with images
+- ☁️ Image upload and storage using Cloudinary
+- 💬 Real-time chat between owners and finders using Socket.IO
+- ✅ Multi-step ownership verification before claiming items
+- 📱 Responsive and user-friendly interface built with React and Tailwind CSS
 
-Multi-Step Claim & Ownership Verification: Custom verification question workflows requiring claimants to prove ownership before retrieving items.
+## 🛠️ Tech Stack
 
-Cloud Media Management: Integrated Cloudinary for scalable image uploads, storage, and optimization.
+### Frontend
+- React (Vite)
+- Tailwind CSS
+- React Router
+- Axios
+- Lucide React
 
-Responsive Dashboard: Interactive feed featuring category filters, status indicators, and custom owner badges.
+### Backend
+- Node.js
+- Express.js
+- Socket.IO
+- MongoDB & Mongoose
+- JWT Authentication
 
-Authentication & Authorization: Secure JWT-based user authentication ensuring protected routes and user-specific report management.
+### Services
+- Jina AI (Semantic Embeddings)
+- Cloudinary (Image Storage)
 
-🛠️ Technology Stack
-Frontend: React, Tailwind CSS, Lucide Icons, Axios, React Router
+## 🚀 Getting Started
 
-Backend: Node.js, Express.js, Socket.IO
+### Clone the repository
 
-Database: MongoDB & Mongoose ODM
+```bash
+git clone https://github.com/your-username/campus-lost-and-found.git
+cd campus-lost-and-found
+```
 
-Cloud Services & AI: Cloudinary (Media Storage), Jina AI (Vector Embeddings)
+### Install dependencies
+
+**Backend**
+```bash
+cd server
+npm install
+```
+
+**Frontend**
+```bash
+cd client
+npm install
+```
+
+### Configure environment variables
+
+Backend (`server/.env`)
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+CLIENT_URL=http://localhost:5173
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+JINA_API_KEY=your_jina_api_key
+```
+
+Frontend (`client/.env`)
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+### Run the application
+
+Backend
+
+```bash
+npm run dev
+```
+
+Frontend
+
+```bash
+npm run dev
+```
+
+## 📌 Future Improvements
+
+- Email notifications
+- Advanced AI ranking
+- Admin dashboard
+- Location-based item search
+
+---
+
+⭐ If you found this project useful, consider giving it a star!
