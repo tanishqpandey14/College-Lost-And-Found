@@ -37,7 +37,7 @@ An AI-powered full-stack web application designed for college campuses to simpli
 ### Clone the repository
 
 ```bash
-git clone https://github.com/your-username/campus-lost-and-found.git
+git clone https://github.com/tanishqpandey14/campus-lost-and-found.git
 cd campus-lost-and-found
 ```
 
