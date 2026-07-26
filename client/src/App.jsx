@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { Navbar } from './components/common/Navbar';
@@ -23,11 +23,47 @@ import FoundDetails from './pages/FoundItems/FoundDetails';
 import ClaimsPage from './pages/Claims/ClaimsPage';
 import ChatPage from './pages/ChatPage';
 
+// Helper component to handle dynamic browser page titles
+function PageTitleHandler() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+
+    // Static route titles
+    const titles = {
+      '/login': 'Login - Lost & Found',
+      '/register': 'Register - Lost & Found',
+      '/': 'Dashboard',
+      '/lost-item/new': 'Lost Item',
+      '/found-item/new': 'Found Item',
+      '/report-found': 'Found Item',
+      '/claims': 'Claims',
+      '/profile': 'Profile',
+    };
+
+    if (titles[path]) {
+      document.title = titles[path];
+    } else if (path.startsWith('/chat/')) {
+      document.title = 'Chat';
+    } else if (path.startsWith('/lost-item/')) {
+      document.title = 'Lost Item Details';
+    } else if (path.startsWith('/found-item/')) {
+      document.title = 'Found Item Details';
+    } else {
+      document.title = 'College Lost & Found';
+    }
+  }, [location]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <SocketProvider>
         <Router>
+          <PageTitleHandler />
           <div className="min-h-screen bg-[#FDFBF7] text-[#1A1A1A] flex flex-col font-sans">
             <Navbar />
             
