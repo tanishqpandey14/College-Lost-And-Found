@@ -28,7 +28,7 @@ export default function Login() {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-[72px] flex flex-col justify-between bg-[#FAF7F2] overflow-hidden">
+    <div className="fixed inset-x-0 bottom-0 top-18 flex flex-col justify-between bg-[#FAF7F2] overflow-hidden">
       
       {/* Main Container */}
       <div className="flex-1 w-full max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-center overflow-hidden">
