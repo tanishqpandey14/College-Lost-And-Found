@@ -9,35 +9,48 @@ const generateToken = (userId) => {
 };
 
 // @route   POST /api/auth/register
+// @route   POST /api/auth/register
 exports.register = async (req, res) => {
   try {
     const { name, email, phoneNumber, password } = req.body;
 
-    const normalizedEmail = email ? email.toLowerCase().trim() : '';
-    const normalizedPhone = phoneNumber ? phoneNumber.trim() : '';
+    // Custom check for missing required fields with friendly messages
+    if (!name?.trim()) {
+      return res.status(400).json({ success: false, message: 'Please enter your full name.' });
+    }
+    if (!email?.trim()) {
+      return res.status(400).json({ success: false, message: 'Please enter your email address.' });
+    }
+    if (!phoneNumber?.trim()) {
+      return res.status(400).json({ success: false, message: 'Please enter your phone number.' });
+    }
+    if (!password) {
+      return res.status(400).json({ success: false, message: 'Please create a password.' });
+    }
 
-    const queryConditions = [];
-    if (normalizedEmail) queryConditions.push({ email: normalizedEmail });
-    if (normalizedPhone) queryConditions.push({ phoneNumber: normalizedPhone });
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedPhone = phoneNumber.trim();
 
-    if (queryConditions.length > 0) {
-      const existingUser = await User.findOne({ $or: queryConditions });
-      if (existingUser) {
-        const isEmailMatch = existingUser.email === normalizedEmail;
-        return res.status(400).json({
-          success: false,
-          message: isEmailMatch
-            ? 'An account with this Email Address already exists.'
-            : 'An account with this Phone Number already exists.'
-        });
-      }
+    // Check existing user
+    const existingUser = await User.findOne({
+      $or: [{ email: normalizedEmail }, { phoneNumber: normalizedPhone }]
+    });
+
+    if (existingUser) {
+      const isEmailMatch = existingUser.email === normalizedEmail;
+      return res.status(400).json({
+        success: false,
+        message: isEmailMatch
+          ? 'An account with this Email Address already exists.'
+          : 'An account with this Phone Number already exists.'
+      });
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await User.create({
-      name: name?.trim(),
+      name: name.trim(),
       email: normalizedEmail,
       phoneNumber: normalizedPhone,
       password: hashedPassword
@@ -57,7 +70,16 @@ exports.register = async (req, res) => {
       }
     });
   } catch (error) {
-    // Catch MongoDB Duplicate Key Errors cleanly
+    // Catch Mongoose ValidationError cleanly if any other field fails
+    if (error.name === 'ValidationError') {
+      const firstErrorKey = Object.keys(error.errors)[0];
+      const customMessage = error.errors[firstErrorKey].message.includes('required')
+        ? 'Please fill in all required fields.'
+        : error.errors[firstErrorKey].message;
+
+      return res.status(400).json({ success: false, message: customMessage });
+    }
+
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern || {})[0];
       return res.status(400).json({
@@ -65,7 +87,8 @@ exports.register = async (req, res) => {
         message: `An account with this ${field === 'phoneNumber' ? 'Phone Number' : 'Email Address'} already exists.`
       });
     }
-    res.status(500).json({ success: false, message: error.message });
+
+    res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
   }
 };
 
