@@ -17,7 +17,7 @@ const lostItemSchema = new mongoose.Schema(
         publicId: { type: String, required: true }
       }
     ],
-    hiddenDetails: { type: String, required: true, select: false },
+    hiddenDetails: { type: String, required: false, select: false },
     status: {
       type: String,
       enum: ['Lost', 'Claim Pending', 'Returned'],

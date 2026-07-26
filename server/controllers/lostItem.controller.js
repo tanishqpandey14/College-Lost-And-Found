@@ -32,7 +32,7 @@ exports.createLostItem = async (req, res) => {
       lostTime,
       lostLocation,
       images,
-      hiddenDetails,
+      hiddenDetails: hiddenDetails || 'None',
       embedding
     });
 
