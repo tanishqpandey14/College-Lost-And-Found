@@ -13,28 +13,31 @@ exports.register = async (req, res) => {
   try {
     const { name, email, phoneNumber, password } = req.body;
 
-    const normalizedEmail = email.toLowerCase().trim();
-    const normalizedPhone = phoneNumber.trim();
+    const normalizedEmail = email ? email.toLowerCase().trim() : '';
+    const normalizedPhone = phoneNumber ? phoneNumber.trim() : '';
 
-    const existingUser = await User.findOne({
-      $or: [{ email: normalizedEmail }, { phoneNumber: normalizedPhone }]
-    });
+    const queryConditions = [];
+    if (normalizedEmail) queryConditions.push({ email: normalizedEmail });
+    if (normalizedPhone) queryConditions.push({ phoneNumber: normalizedPhone });
 
-    if (existingUser) {
-      const isEmailMatch = existingUser.email === normalizedEmail;
-      return res.status(400).json({
-        success: false,
-        message: isEmailMatch
-          ? 'An account with this Email Address already exists.'
-          : 'An account with this Phone Number already exists.'
-      });
+    if (queryConditions.length > 0) {
+      const existingUser = await User.findOne({ $or: queryConditions });
+      if (existingUser) {
+        const isEmailMatch = existingUser.email === normalizedEmail;
+        return res.status(400).json({
+          success: false,
+          message: isEmailMatch
+            ? 'An account with this Email Address already exists.'
+            : 'An account with this Phone Number already exists.'
+        });
+      }
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await User.create({
-      name,
+      name: name?.trim(),
       email: normalizedEmail,
       phoneNumber: normalizedPhone,
       password: hashedPassword
@@ -56,7 +59,7 @@ exports.register = async (req, res) => {
   } catch (error) {
     // Catch MongoDB Duplicate Key Errors cleanly
     if (error.code === 11000) {
-      const field = Object.keys(error.keyPattern)[0];
+      const field = Object.keys(error.keyPattern || {})[0];
       return res.status(400).json({
         success: false,
         message: `An account with this ${field === 'phoneNumber' ? 'Phone Number' : 'Email Address'} already exists.`
@@ -70,6 +73,10 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Please provide email and password' });
+    }
 
     const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
     if (!user) {
@@ -120,12 +127,13 @@ exports.updateProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if (phoneNumber && phoneNumber !== user.phoneNumber) {
-      const existingPhone = await User.findOne({ phoneNumber, _id: { $ne: req.user._id } });
+    if (phoneNumber && phoneNumber.trim() !== user.phoneNumber) {
+      const trimmedPhone = phoneNumber.trim();
+      const existingPhone = await User.findOne({ phoneNumber: trimmedPhone, _id: { $ne: req.user._id } });
       if (existingPhone) {
         return res.status(400).json({ success: false, message: 'Phone number is already taken by another account.' });
       }
-      user.phoneNumber = phoneNumber.trim();
+      user.phoneNumber = trimmedPhone;
     }
 
     if (name) user.name = name.trim();
