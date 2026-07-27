@@ -72,7 +72,7 @@ export default function Login() {
                   <Shield className="w-5 h-5 text-white" />
                 </div>
                 <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A1A1A]">Welcome back</h2>
-                <p className="text-xs text-[#666666]">Sign in to continue to College Lost & Found.</p>
+                <p className="text-xs text-[#666666]">Sign in to continue to College Lost & Found</p>
               </div>
 
               {error && (
