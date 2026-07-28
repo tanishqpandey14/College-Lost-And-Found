@@ -9,12 +9,14 @@ const generateToken = (userId) => {
 };
 
 // @route   POST /api/auth/register
-// @route   POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    const { name, email, phoneNumber, password } = req.body;
+    // 🔽 Support both 'phoneNumber' and 'phone' from request payload
+    const name = req.body.name;
+    const email = req.body.email;
+    const phoneNumber = req.body.phoneNumber || req.body.phone;
+    const password = req.body.password;
 
-    // Custom check for missing required fields with friendly messages
     if (!name?.trim()) {
       return res.status(400).json({ success: false, message: 'Please enter your full name.' });
     }
@@ -70,16 +72,6 @@ exports.register = async (req, res) => {
       }
     });
   } catch (error) {
-    // Catch Mongoose ValidationError cleanly if any other field fails
-    if (error.name === 'ValidationError') {
-      const firstErrorKey = Object.keys(error.errors)[0];
-      const customMessage = error.errors[firstErrorKey].message.includes('required')
-        ? 'Please fill in all required fields.'
-        : error.errors[firstErrorKey].message;
-
-      return res.status(400).json({ success: false, message: customMessage });
-    }
-
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern || {})[0];
       return res.status(400).json({
@@ -87,8 +79,7 @@ exports.register = async (req, res) => {
         message: `An account with this ${field === 'phoneNumber' ? 'Phone Number' : 'Email Address'} already exists.`
       });
     }
-
-    res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
