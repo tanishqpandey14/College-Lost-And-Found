@@ -1,6 +1,7 @@
 const Claim = require('../models/Claim');
 const FoundItem = require('../models/FoundItem');
 const LostItem = require('../models/LostItem');
+const Match = require('../models/Match');
 
 // Helper function to safely convert ObjectIds to strings
 const extractIdString = (idOrDoc) => {
@@ -159,7 +160,7 @@ exports.reviewClaim = async (req, res) => {
 };
 
 // @route   PUT /api/claims/:id/complete
-// @desc    Mark claim as completed (Owner/Claimant only)
+// @desc    Mark claim as completed (Owner/Claimant only) and purge linked matches
 // @access  Private
 exports.completeClaim = async (req, res) => {
   try {
@@ -200,9 +201,18 @@ exports.completeClaim = async (req, res) => {
       );
     }
 
+    // Purge all AI match cards associated with either the found or lost item
+    const matchCleanupFilters = [];
+    if (claim.foundItem) matchCleanupFilters.push({ foundItem: claim.foundItem });
+    if (claim.lostItem) matchCleanupFilters.push({ lostItem: claim.lostItem });
+
+    if (matchCleanupFilters.length > 0) {
+      await Match.deleteMany({ $or: matchCleanupFilters });
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Item receipt confirmed! Claim session closed.',
+      message: 'Item receipt confirmed! Claim session closed and match records cleared.',
       claim
     });
   } catch (error) {

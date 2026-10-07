@@ -47,6 +47,11 @@ export default function Dashboard() {
     return true;
   });
 
+  // Defensive Filter: Ensure both lostItem and foundItem exist
+  const validMatches = matches.filter(
+    (match) => Boolean(match && match.lostItem && match.foundItem)
+  );
+
   const currentUserId = String(user?.id || user?._id || '');
 
   return (
@@ -84,22 +89,26 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 2. AI Semantic Match Alerts */}
-      {matches.length > 0 && (
+      {/* 2. AI Semantic Match Alerts (Renders ONLY if valid matches exist) */}
+      {validMatches.length > 0 && (
         <div className="bg-[#EAE3D5] border border-[#DCD3C3] rounded-3xl p-6">
           <div className="flex items-center gap-2 text-[#000B76] font-bold text-sm uppercase tracking-wider mb-4">
             <Sparkles className="w-4 h-4 fill-current" />
-            AI Matches ({matches.length})
+            AI Matches ({validMatches.length})
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {matches.map((match) => (
+            {validMatches.map((match) => (
               <div key={match._id} className="bg-[#FDFBF7] p-5 rounded-2xl border border-[#E8E1D5] flex items-center justify-between gap-4">
                 <div>
                   <div className="inline-block px-2.5 py-0.5 rounded-full bg-[#007A55]/10 text-[#007A55] text-xs font-bold mb-1">
-                    {match.confidenceScore}% Match Confidence
+                    {Math.round(match.confidenceScore || match.score || 0)}% Match Confidence
                   </div>
-                  <h4 className="font-bold text-[#1A1A1A] text-base">{match.lostItem?.itemName} ↔ {match.foundItem?.itemName}</h4>
-                  <p className="text-xs text-[#666666] mt-1">Location: {match.foundItem?.foundLocation}</p>
+                  <h4 className="font-bold text-[#1A1A1A] text-base">
+                    {match.lostItem?.itemName} ↔ {match.foundItem?.itemName}
+                  </h4>
+                  <p className="text-xs text-[#666666] mt-1">
+                    Location: {match.foundItem?.foundLocation || match.lostItem?.lostLocation || 'Campus'}
+                  </p>
                 </div>
                 <Link
                   to={`/found-item/${match.foundItem?._id}`}

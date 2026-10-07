@@ -1,4 +1,5 @@
 const LostItem = require('../models/LostItem');
+const Match = require('../models/Match');
 const { generateEmbedding } = require('../services/jinaAi.service');
 const { processMatchingForItem } = require('../services/vectorMatch.service');
 const { uploadToCloudinary, deleteFromCloudinary } = require('../services/cloudinary.service');
@@ -58,13 +59,13 @@ exports.getLostItems = async (req, res) => {
 
     if (category) query.category = category;
     if (color) query.color = color;
-    if (location) query.lostLocation = { $regex: location, $options: 'i' };
+    if (location) query.lostLocation = { $regex: location,$options: 'i' };
 
     if (search) {
       query.$or = [
-        { itemName: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { brand: { $regex: search, $options: 'i' } }
+        { itemName: { $regex: search,$options: 'i' } },
+        { description: { $regex: search,$options: 'i' } },
+        { brand: { $regex: search,$options: 'i' } }
       ];
     }
 
@@ -105,7 +106,7 @@ exports.updateLostItem = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized to update this item' });
     }
 
-    const { itemName, description, category, brand, color, lostLocation, lostDate, lostTime, hiddenDetails } = req.body;
+    const { itemName, description, category, brand, color, lostLocation, lostDate, lostTime, hiddenDetails, status } = req.body;
 
     // Check if title or description changed to regenerate embedding
     const contentChanged = (itemName && itemName !== item.itemName) || (description && description !== item.description);
@@ -120,6 +121,14 @@ exports.updateLostItem = async (req, res) => {
     if (lostTime) item.lostTime = lostTime;
     if (hiddenDetails) item.hiddenDetails = hiddenDetails;
 
+    // If status is updated to completed/returned, clean up linked active matches
+    if (status) {
+      item.status = status;
+      if (['Returned', 'returned', 'Resolved', 'resolved'].includes(status)) {
+        await Match.deleteMany({ lostItem: item._id });
+      }
+    }
+
     if (contentChanged) {
       const textToEmbed = `${item.itemName} ${item.category} ${item.brand || ''} ${item.description}`;
       item.embedding = await generateEmbedding(textToEmbed);
@@ -127,7 +136,7 @@ exports.updateLostItem = async (req, res) => {
 
     await item.save();
 
-    if (contentChanged) {
+    if (contentChanged && !['Returned', 'returned', 'Resolved', 'resolved'].includes(item.status)) {
       processMatchingForItem(item, 'LOST', req.io);
     }
 
@@ -138,7 +147,7 @@ exports.updateLostItem = async (req, res) => {
 };
 
 // @route   DELETE /api/lost-items/:id
-// @desc    Delete lost item and purge Cloudinary images
+// @desc    Delete lost item, purge Cloudinary images, and remove linked matches
 // @access  Private (Owner only)
 exports.deleteLostItem = async (req, res) => {
   try {
@@ -149,6 +158,9 @@ exports.deleteLostItem = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized to delete this item' });
     }
 
+    // Cascade delete any match documents referencing this lost item
+    await Match.deleteMany({ lostItem: item._id });
+
     // Delete associated images from Cloudinary
     if (item.images && item.images.length > 0) {
       const deletePromises = item.images.map((img) => deleteFromCloudinary(img.publicId));
@@ -156,7 +168,7 @@ exports.deleteLostItem = async (req, res) => {
     }
 
     await item.deleteOne();
-    res.status(200).json({ success: true, message: 'Lost item report deleted successfully' });
+    res.status(200).json({ success: true, message: 'Lost item report and related matches deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
