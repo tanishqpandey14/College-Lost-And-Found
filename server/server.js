@@ -15,23 +15,24 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   'http://localhost:5173',
   'http://localhost:3000'
-].filter(Boolean); // Removes undefined values if CLIENT_URL is not set
+].filter(Boolean);
+
+const checkOrigin = (origin, callback) => {
+  // Allow requests with no origin (mobile apps, Postman, server-to-server)
+  if (!origin) return callback(null, true);
+
+  const isVercel = origin.endsWith('.vercel.app');
+  if (allowedOrigins.includes(origin) || isVercel) {
+    callback(null, true);
+  } else {
+    callback(new Error('Not allowed by CORS'));
+  }
+};
 
 // Enable CORS for Express
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps, curl, Postman)
-      if (!origin) return callback(null, true);
-      
-      // Check if origin matches or if it's any Vercel deployment preview (*.vercel.app)
-      const isVercel = origin.endsWith('.vercel.app');
-      if (allowedOrigins.includes(origin) || isVercel) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: checkOrigin,
     credentials: true
   })
 );
@@ -42,7 +43,7 @@ app.use(express.urlencoded({ extended: true }));
 // Connect Database
 connectDB();
 
-// Root Welcome Route (Fixes "Cannot GET /" on Render)
+// Root Welcome Route
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
@@ -53,15 +54,7 @@ app.get('/', (req, res) => {
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      const isVercel = origin.endsWith('.vercel.app');
-      if (allowedOrigins.includes(origin) || isVercel) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: checkOrigin,
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -104,6 +97,17 @@ app.use('/api/found-items', require('./routes/foundItem.routes'));
 app.use('/api/claims', require('./routes/claim.routes'));
 app.use('/api/chat', require('./routes/chat.routes'));
 app.use('/api/meetings', require('./routes/meeting.routes'));
+
+// Mount Matches Route (Fixes 404 on /api/matches)
+app.use('/api/matches', require('./routes/match.routes'));
+
+// Catch-all 404 handler for undefined API routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `API endpoint not found: ${req.method} ${req.originalUrl}`
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 
